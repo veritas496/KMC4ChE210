@@ -1,0 +1,382 @@
+function [NZE,Conf,H2PSP,H2Num,CH4DSP,HdiffusionSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=redifinedH2production(NZE,W,L,Conf,H,H2PSP,H2Num,CH4DSP,CH3,CH2,CH,C,C3,HdiffusionSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP)
+Hstore=zeros(4,2);
+
+k=find(HdiffusionSP);
+N=ceil(rand(1)*numel(k));
+ind1=k(N);
+if N==1
+   ind1=k(N-1);
+else
+   ind2=k(N+1);
+end
+   
+n1=ceil(ind1/W);
+m1=ind1-W*(n-1);
+H1pickedup=[m1 n1];  %pickup an random position for H1
+
+upH1picked=[H1pickedup(1),H1pickedup(2)+1];       %the position of its neighbours
+downH1picked=[H1pickedup(1),H1pickedup(2)-1];
+leftH1picked=[H1pickedup(1)-1,H1pickedup(2)];
+rightH1picked=[H1pickedup(1)+1,H1pickedup(2)];
+
+n2=ceil(ind2/W);
+m2=ind2-W*(n-1);
+H2pickedup=[m2 n2];  %pickup an random position for H1
+
+upH2picked=[H2pickedup(1),H2pickedup(2)+1]; % find the neighbours of this H2
+downH2picked=[H2pickedup(1),H2pickedup(2)-1];
+leftH2picked=[H2pickedup(1)-1,H2pickedup(2)];
+rightH2picked=[H2pickedup(1)+1,H2pickedup(2)];                                         
+
+Conf(H1pickedup(1),H1pickedup(2))=0;  % update the configuration of the lattice
+Conf(H2pickedup(1),H2pickedup(2))=0;
+H2Num=H2Num+1;
+
+if sum((H1pickedup-H2pickedup).^2)==1
+               
+    CH4DSP(H1pickedup(1),H1pickedup(2))=1;%addevent(CH4DSP,H1pickedup,'CH4DSP');
+    CH4DSP(H2pickedup(1),H2pickedup(2))=1;%addevent(CH4DSP,H2pickedup,'CH4DSP');
+    NZE(5)=NZE(5)+2;
+    H2PSP(H1pickedup(1),H1pickedup(2))=0; %remove H2production at this site
+    H2PSP(H2pickedup(1),H2pickedup(2))=0;% %remove H2production at this site
+    NZE(12)=NZE(12)-2;
+
+    
+    
+    if H1pickedup(1)>1&&H1pickedup(1)<W&&H1pickedup(2)>1&&H1pickedup(2)<L&&H2pickedup(1)>1&&H2pickedup(1)<W&&H2pickedup(2)>1&&H2pickedup(2)<L
+        RP=H1pickedup(1)-H2pickedup(1);%relative position
+        switch(RP)
+            case(0)% the same column
+                position=H1pickedup(2)-H2pickedup(2);
+                switch(position)
+                    case(1)                                                 % .....H1.....  
+                                                                            % .....H  ..... 
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,rightH1picked,...
+                            H2pickedup,leftH2picked,downH2picked,rightH2picked);           
+ 
+                    case(-1)                                               % .....H  .....  
+                                                                           % .....H1.....
+
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,downH1picked,rightH1picked,...
+                            H2pickedup,upH2picked,leftH2picked,rightH2picked);
+
+                end
+            case(1)                                                         % .....HH1..... 
+
+                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,rightH1picked,downH1picked,...
+                    H2pickedup,upH2picked,leftH2picked,downH2picked); 
+
+            case(-1)                                                        % .....H1H..... 
+                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,downH1picked,...
+                    H2pickedup,upH2picked,rightH2picked,downH2picked);  
+
+        end
+    elseif H1pickedup(1)>1&&H1pickedup(1)<W&&H2pickedup(1)>1&&H2pickedup(1)<W
+        checkupdown=(H1pickedup(2)==1||H2pickedup(2)==1);
+        switch(checkupdown)   
+            case(0)                                                        %upmost
+                RP=H1pickedup(1)-H2pickedup(1);
+                switch(RP)
+                    case(0)      %same column                      
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                 % ... H1... upmost 2 to W-1
+                                                                                % ... H  ...        2 to W-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,rightH1picked,0,...
+                                    H2pickedup,leftH2picked,rightH2picked,downH2picked);          
+
+                            case(-1)                                                % ... H  ... upmost 2 to W-1
+                                                                                % ... H1...        2 to W-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,rightH1picked,downH1picked,...
+                                    H2pickedup,leftH2picked,rightH2picked,0);              
+
+                        end
+                    case(1)                                                         % ... HH1... upmost 2 to W-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,rightH1picked,downH1picked,0,...
+                            H2pickedup,leftH2picked,downH2picked,0); 
+
+                    case(-1)                                                        % ... H1H... upmost 2 to W-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,downH1picked,0,...
+                            H2pickedup,rightH2picked,downH2picked,0); 
+
+                end
+            case(1)                                                      %downmost
+                RP=H1pickedup(1)-H2pickedup(1);
+                switch(RP)
+                    case(0)            %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                  % ... H1... 2 to W-1
+                                                                                 % ... H ... downmost  2 to W-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,rightH1picked,...
+                                    H2pickedup,leftH2picked,rightH2picked,0);                 
+
+                            case(-1)                                                 % ... H  ...  2 to W-1
+                                                                                 % ... H1...  downmost  2 to W-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,rightH1picked,0,...
+                                    H2pickedup,upH2picked,leftH2picked,rightH2picked);           
+
+                        end
+                    case(1)                                                          % ... HH1... downmost 2 to W-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,rightH1picked,0,...
+                            H2pickedup,upH2picked,leftH2picked,0); 
+
+                    case(-1)                                                         % ... H1H... downmost 2 to W-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,0,...
+                            H2pickedup,upH2picked,rightH2picked,0);   
+
+                end
+        end
+    elseif H1pickedup(2)>1&&H1pickedup(2)<L&&H2pickedup(2)>1&&H2pickedup(2)<L
+        checkleftright=(H1pickedup(1)==W||H2pickedup(1)==W);
+        switch(checkleftright)
+            case(0)                                                   %leftmost
+                RP=H1pickedup(1)-H2pickedup(1); 
+                switch(RP)
+                    case(0)                                           %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                 % H1......  leftmost 2 to L-1
+                                                                                % H......    leftmost 2 to L-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,rightH1picked,0,...
+                                    H2pickedup,downH2picked,rightH2picked,0);            
+
+                            case(-1)                                                % H......    leftmost 2 to L-1
+                                                                                % H1......  leftmost 2 to L-1 
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,downH1picked,rightH1picked,0,...
+                                    H2pickedup,upH2picked,rightH2picked,0);           
+
+                        end
+                    case(1)                                                         % HH1......  leftmost 2 to L-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,downH1picked,rightH1picked,...
+                            H2pickedup,upH2picked,downH2picked,0); 
+
+                    case(-1)                                                        % H1H......  leftmost 2 to L-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,downH1picked,0,...
+                            H2pickedup,upH2picked,downH2picked,rightH2picked); 
+ 
+                end
+            case(1)                                                 %rightmost
+                RP=H1pickedup(1)-H2pickedup(1); 
+                switch(RP)
+                    case(0)                                         %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                % ......H1  righttmost 2 to L-1
+                                                                               % ......H    rightmost 2 to L-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,0,...
+                                    H2pickedup,leftH2picked,downH2picked,0);            
+
+                            case(-1)                                               % ......H    righttmost 2 to L-1
+                                                                               % ......H1  rightmost 2 to L-1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,downH1picked,0,...
+                                    H2pickedup,upH2picked,leftH2picked,0);          
+
+                        end
+                    case(1)                                                        % ......HH1  righttmost 2 to L-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,downH1picked,0,...
+                            H2pickedup,upH2picked,leftH2picked,downH2picked);  
+
+                    case(-1)                                                       % ......H1H  righttmost 2 to L-1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,downH1picked,...
+                            H2pickedup,upH2picked,downH2picked,0); 
+
+                end
+        end
+    elseif H1pickedup(2)==L||H2pickedup(2)==L                     %upcorners
+        checkleftright=(H1pickedup(1)==W||H2pickedup(1)==W);
+        switch(checkleftright)
+            case(0)                                               %upleft
+                RP=H1pickedup(1)-H2pickedup(1);
+                switch(RP)
+                    case(0)                                       %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                      %H1 0000...upleft corner
+                                                                                     %H  0000...
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,rightH1picked,0,0,...
+                                    H2pickedup,downH2picked,rightH2picked,0);               
+
+                            case(-1)                                                     %H   00000...upleft corner
+                                                                                     %H1 00000...
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,rightH1picked,downH1picked,0,...
+                                    H2pickedup,rightH2picked,0,0);              
+
+                        end
+                    case(1)                                                              %H H10000...upleft corner
+                                                                                     %0 0  0000...
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,downH1picked,rightH1picked,0,...
+                            H2pickedup,downH2picked,0,0);                       
+
+                    case(-1)                                                             %H1 H000...upleft corner
+                                                                                     %0  0000...
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,downH1picked,0,0,...
+                            H2pickedup,downH2picked,rightH2picked,0);                       
+
+                end
+            case(1)                                               %upright
+                RP=H1pickedup(1)-H2pickedup(1);
+                switch(RP)
+                    case(0)                                       %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                      %...00000 H1...upright corner
+                                                                                     %...00000 H
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,0,0,...
+                                    H2pickedup,leftH2picked,downH2picked,0);               
+
+                            case(-1)                                                     %...00000 H...upright corner
+                                                                                     %...00000 H1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,downH1picked,0,...
+                                    H2pickedup,leftH2picked,0,0);               
+
+                        end
+                    case(1)                                                              %...0000H H1...upright corner
+                                                                                     %...00000 0
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,downH1picked,0,0,...
+                            H2pickedup,leftH2picked,downH2picked,0);                       
+
+                    case(-1)                                                             %...0000H1 H...upright corner
+                                                                                     %...00000  0
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,downH1picked,leftH1picked,0,...
+                            H2pickedup,downH2picked,0,0);                       
+
+                end
+        end
+    else                                                         %downcorners
+        checkleftright=(H1pickedup(1)==W||H2pickedup(1)==W);
+        switch(checkleftright)
+            case(0)                                              %downleft
+                RP=H1pickedup(1)-H2pickedup(1);
+                switch(RP)
+                    case(0)                                      %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                      %H1 00000 ...downleft corner
+                                                                                     %H  00000...
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,rightH1picked,upH1picked,0,...
+                                    H2pickedup,rightH2picked,0,0);              
+
+                            case(-1)                                                     %H  00000 ...downleft corner
+                                                                                     %H1 00000...
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,rightH1picked,0,0,...
+                                    H2pickedup,rightH2picked,upH2picked,0);              
+
+                        end
+                    case(1)                                                              %0 0 00000 ...downleft corner
+                                                                                     %H H100000...
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,rightH1picked,0,...
+                            H2pickedup,upH2picked,0,0);                         
+
+                    case(-1)                                                             %0  0 00000 ...downleft corner
+                                                                                     %H1 H 00000...
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,0,0,...
+                            H2pickedup,rightH2picked,upH2picked,0);                         
+
+                end
+            case(1)                                             %downright
+                RP=H1pickedup(1)-H2pickedup(1);
+                switch(RP)
+                    case(0)                                     %same column
+                        position=H1pickedup(2)-H2pickedup(2);
+                        switch(position)
+                            case(1)                                                      % ...000000 H1 downright corner
+                                                                                     % ...000000 H 
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,upH1picked,0,...
+                                    H2pickedup,leftH2picked,0,0);                
+
+                            case(-1)                                                     % ...000000H downright corner
+                                                                                     % ...000000H1
+                                [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                                    HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,leftH1picked,0,0,...
+                                    H2pickedup,upH2picked,leftH2picked,0);                 
+
+                        end
+                    case(1)                                                              % ...000000 0 downright corner
+                                                                                     % ...00000H H1
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,0,0,...
+                            H2pickedup,upH2picked,leftH2picked,0);                           
+
+                    case(-1)                                                             % ...000000  0 downright corner
+                                                                                     % ...00000H1 H
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,0,...
+                            H2pickedup,upH2picked,0,0);                           
+
+                end
+        end
+    end
+    
+else   % two H not neighbors
+    
+    if upH1picked(2)>W
+        upH1picked=0; 
+    end
+    if downH1picked(2)<1
+        downH1picked=0;
+    end
+    if leftH1picked(1)<1
+        leftH1picked=0;
+    end
+    if rightH1picked(1)>W
+        rightH1picked=0;
+    end
+    if upH2picked(2)>W
+        upH2picked=0; 
+    end
+    if downH2picked(2)<1
+        downH2picked=0;
+    end
+    if leftH2picked(1)<1
+        leftH2picked=0;
+    end
+    if rightH2picked(1)>W
+        rightH2picked=0;
+    end
+
+                        [NZE,HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP]=H2PcheckNB(NZE,Conf,H,CH3,CH2,CH,C,C3,...
+                            HdiffusionSP,CH4DSP,H2PSP,CH3DSP,CH2DSP,CH3PSP,CHDSP,CH2PSP,CdiffusionSP,CHPSP,C3diffusionSP,CH4PSP,H1pickedup,upH1picked,leftH1picked,downH1picked,rightH1picked,...
+                            H2pickedup,upH2picked,downH2picked,leftH2picked,rightH2picked);                           
+
+                end
+        end
+    end
+    
+    
+end
+
+end

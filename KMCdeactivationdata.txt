@@ -1,0 +1,4 @@
+lattice diameter Temperature  coveragecheck coverageSTD
+400.00    79.47   923.15       1.00       0.10
+tcheck(s) coverageinrease/min CNTdrop(gC/gcat/min 1e3)       CXF001 aveCNTrate(gC/gcat/min) 1e3
+0.23676           25.50099            8.29325          161.00000         4379.41689

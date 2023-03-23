@@ -1,0 +1,60 @@
+function [ystore,NZE,Conf,CNum,CdiffusionSP,CH4DSP,C2FSP,CXFSP,HdiffusionSP,C3diffusionSP,CH3DSP,CH2DSP,CHDSP,CHPSP,C3FSP,CCNTSP,CBdiffusionSP]=redefineCCNT(NZE,W,L,Conf,CNum,C,CdiffusionSP,H,CH3,CH2,CH,C2,C3,...
+    CX,CH4DSP,C2FSP,CXFSP,HdiffusionSP,C3diffusionSP,CH3DSP,CH2DSP,CHDSP,CHPSP,C3FSP,CCNTSP,CBdiffusionSP,ystore)
+
+k=find(CdiffusionSP);
+u=find(C3diffusionSP);
+k=[k;u];
+N=ceil(rand(1)*numel(k));
+ind=k(N);
+n=ceil(ind/W);
+m=ind-W*(n-1);
+Cpickedup=[m n];  %pickup an random position for C or C3
+
+upCpicked=[Cpickedup(1),Cpickedup(2)+1];       %the position of its neighbours
+downCpicked=[Cpickedup(1),Cpickedup(2)-1];
+leftCpicked=[Cpickedup(1)-1,Cpickedup(2)];
+rightCpicked=[Cpickedup(1)+1,Cpickedup(2)];
+
+if Conf(Cpickedup(1),Cpickedup(2))==C
+    
+    Conf(Cpickedup(1),Cpickedup(2))=0;  % update the configuration of the lattice  
+    CNum=CNum+1;
+    
+    CdiffusionSP(Cpickedup(1),Cpickedup(2))=0;%remove C diffusion at this site
+    NZE(3)=NZE(3)-1;
+    if CCNTSP(Cpickedup(1),Cpickedup(2))>0    
+       CCNTSP(Cpickedup(1),Cpickedup(2))=0;
+       NZE(19)=NZE(19)-1;
+    end
+    CBdiffusionSP(Cpickedup(1),Cpickedup(2))=0;%remove C bulk diffusion at this site
+    NZE(20)=NZE(20)-1;
+    
+    ystore=scanNBP(ystore,Conf,W,L,CX,Cpickedup,upCpicked,downCpicked,leftCpicked,rightCpicked,[],0,0,0,0);
+
+    
+    [NZE,CdiffusionSP,CH4DSP,C2FSP,CXFSP,HdiffusionSP,C3diffusionSP,CH3DSP,CH2DSP,CHDSP,CHPSP,C3FSP]=redefineCCNTcheckCNB(NZE,Conf,W,L,H,C,CH3,CH2,CH,C2,C3,...
+                CX,CdiffusionSP,CH4DSP,C2FSP,CXFSP,HdiffusionSP,C3diffusionSP,CH3DSP,CH2DSP,CHDSP,CHPSP,C3FSP,...
+                Cpickedup,upCpicked,downCpicked,leftCpicked,rightCpicked);
+  
+else                                    %Conf(Cpickedup(1),Cpickedup(2))==C3
+    Conf(Cpickedup(1),Cpickedup(2))=0;  % update the configuration of the lattice  
+    CNum=CNum+3;
+    
+    C3diffusionSP(Cpickedup(1),Cpickedup(2))=0;%remove C3 diffusion at this site
+    NZE(4)=NZE(4)-1;
+    
+    ystore=scanNBP(ystore,Conf,W,L,CX,Cpickedup,upCpicked,downCpicked,leftCpicked,rightCpicked,0,0,0,0,0);
+
+    if CCNTSP(Cpickedup(1),Cpickedup(2))>0    
+       CCNTSP(Cpickedup(1),Cpickedup(2))=0;
+       NZE(19)=NZE(19)-1;
+    end
+
+   
+                                                                        
+    [NZE,CdiffusionSP,CH4DSP,CXFSP,HdiffusionSP,C3diffusionSP,CH3DSP,CH2DSP,CHDSP]=redefineCCNTcheckC3NB(NZE,Conf,W,L,H,C,CH3,CH2,CH,C2,C3,...
+                CX,CdiffusionSP,CH4DSP,CXFSP,HdiffusionSP,C3diffusionSP,CH3DSP,CH2DSP,CHDSP,Cpickedup,upCpicked,downCpicked,leftCpicked,rightCpicked);
+ 
+end
+                                                                                                                                                                               
+end
