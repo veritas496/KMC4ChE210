@@ -1,8 +1,3 @@
-% Kinetic Monte Carlo Simulations of the CNT Growth Base on Carbon Surface Nucleation and Diffusion Mechanism
-% Written by Jingde Li
-% Department of Chemical Engineering
-% Univeristy of Waterloo,Canada
-
 clear;
 clc;
 
